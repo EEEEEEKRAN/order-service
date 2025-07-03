@@ -21,7 +21,19 @@ public class RabbitMQConfig {
 
     // Noms des exchanges et queues (doivent correspondre au product-service)
     public static final String PRODUCT_EXCHANGE = "product.exchange";
+    public static final String PRODUCT_CREATED_ROUTING_KEY = "product.created";
+    public static final String PRODUCT_UPDATED_ROUTING_KEY = "product.updated";
+    public static final String PRODUCT_DELETED_ROUTING_KEY = "product.deleted";
+    
+    // Queue spécifique au order-service pour les événements produits
     public static final String ORDER_SERVICE_PRODUCT_QUEUE = "order-service.product.queue";
+    
+    // Configuration pour les événements commandes
+    public static final String ORDER_EXCHANGE = "order.exchange";
+    public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
+    public static final String ORDER_STATUS_UPDATED_ROUTING_KEY = "order.status.updated";
+    public static final String ORDER_CANCELLED_ROUTING_KEY = "order.cancelled";
+    public static final String ORDER_DELETED_ROUTING_KEY = "order.deleted";
     
     // Routing keys pour écouter tous les événements produits
     public static final String PRODUCT_ALL_ROUTING_KEY = "product.*";
@@ -48,9 +60,38 @@ public class RabbitMQConfig {
     @Bean
     public Binding orderServiceProductBinding() {
         return BindingBuilder
-                .bind(orderServiceProductQueue())
-                .to(productExchange())
-                .with(PRODUCT_ALL_ROUTING_KEY);
+            .bind(orderServiceProductQueue())
+            .to(productExchange())
+            .with(PRODUCT_ALL_ROUTING_KEY);
+    }
+    
+    // Configuration pour les événements commandes
+    @Bean
+    public TopicExchange orderExchange() {
+        return new TopicExchange(ORDER_EXCHANGE);
+    }
+    
+    // Configuration pour écouter les événements utilisateurs
+    public static final String USER_EXCHANGE = "user.exchange";
+    public static final String USER_ALL_ROUTING_KEY = "user.*";
+    public static final String ORDER_SERVICE_USER_QUEUE = "order-service.user.queue";
+    
+    @Bean
+    public TopicExchange userExchange() {
+        return new TopicExchange(USER_EXCHANGE);
+    }
+    
+    @Bean
+    public Queue orderServiceUserQueue() {
+        return new Queue(ORDER_SERVICE_USER_QUEUE, true);
+    }
+    
+    @Bean
+    public Binding orderServiceUserBinding() {
+        return BindingBuilder
+            .bind(orderServiceUserQueue())
+            .to(userExchange())
+            .with(USER_ALL_ROUTING_KEY);
     }
 
     /**

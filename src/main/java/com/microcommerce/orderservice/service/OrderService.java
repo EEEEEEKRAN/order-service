@@ -4,6 +4,8 @@ import com.microcommerce.orderservice.entity.Order;
 import com.microcommerce.orderservice.entity.OrderItem;
 import com.microcommerce.orderservice.entity.OrderStatus;
 import com.microcommerce.orderservice.repository.OrderRepository;
+import com.microcommerce.orderservice.event.OrderEvent;
+import com.microcommerce.orderservice.service.OrderEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public class OrderService {
     @Autowired
     private UserServiceClient userServiceClient;
     
+    @Autowired
+    private OrderEventPublisher orderEventPublisher;
+    
     /**
      * Crée une nouvelle commande
      * Valide les produits et calcule le total automatiquement
@@ -59,6 +64,9 @@ public class OrderService {
             // On sauvegarde
             Order savedOrder = orderRepository.save(order);
             logger.info("Commande créée avec succès: {}", savedOrder.getId());
+            
+            // Publier l'événement de création de commande
+            orderEventPublisher.publishOrderCreated(savedOrder);
             
             return savedOrder;
             
@@ -126,6 +134,10 @@ public class OrderService {
         Order updatedOrder = orderRepository.save(order);
         
         logger.info("Statut mis à jour avec succès pour la commande: {}", orderId);
+        
+        // Publier l'événement de mise à jour de statut
+        orderEventPublisher.publishOrderStatusUpdated(updatedOrder);
+        
         return updatedOrder;
     }
     
@@ -152,6 +164,10 @@ public class OrderService {
         Order cancelledOrder = orderRepository.save(order);
         
         logger.info("Commande annulée avec succès: {}", orderId);
+        
+        // Publier l'événement d'annulation de commande
+        orderEventPublisher.publishOrderCancelled(cancelledOrder);
+        
         return cancelledOrder;
     }
     
@@ -161,12 +177,19 @@ public class OrderService {
     public void deleteOrder(String orderId) {
         logger.info("Suppression de la commande: {}", orderId);
         
-        if (!orderRepository.existsById(orderId)) {
-            throw new RuntimeException("Commande introuvable: " + orderId);
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Commande non trouvée avec l'ID: " + orderId));
+        
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            throw new RuntimeException("Impossible de supprimer une commande déjà livrée");
         }
         
         orderRepository.deleteById(orderId);
-        logger.info("Commande supprimée avec succès: {}", orderId);
+        
+        logger.info("Commande {} supprimée avec succès", orderId);
+        
+        // Publier l'événement de suppression de commande
+        orderEventPublisher.publishOrderDeleted(order.getId());
     }
     
     /**
