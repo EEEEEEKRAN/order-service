@@ -1,0 +1,79 @@
+# Configuration de l'Order Service
+server:
+  port: 8083
+  servlet:
+    context-path: /
+
+# Configuration Spring
+spring:
+  application:
+    name: order-service
+  
+  # Configuration MongoDB
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: orderservice_db
+      
+  # Configuration des logs
+  output:
+    ansi:
+      enabled: always
+
+# Configuration des services externes
+services:
+  user-service:
+    url: http://localhost:8082
+  product-service:
+    url: http://localhost:8081
+
+# Configuration Actuator pour le monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# Informations de l'application
+info:
+  app:
+    name: Order Service
+    description: Service de gestion des commandes pour l'application micro-commerce
+    version: 1.0.0
+    author: Micro Commerce Team
+  service:
+    port: 8083
+    database: MongoDB
+    features:
+      - "Création et gestion des commandes"
+      - "Gestion des statuts de commande"
+      - "Liaison utilisateurs-produits"
+      - "Calcul automatique des totaux"
+      - "Communication inter-services"
+      - "Statistiques et rapports"
+
+# Configuration des logs
+logging:
+  level:
+    com.microcommerce.orderservice: INFO
+    org.springframework.web: DEBUG
+    org.springframework.data.mongodb: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/order-service.log
+
+# Configuration WebClient (pour les appels inter-services)
+webclient:
+  timeout:
+    connection: 5000
+    read: 10000
+    write: 10000

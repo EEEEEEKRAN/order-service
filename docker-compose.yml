@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Service MongoDB pour les commandes
+  mongodb-order:
+    image: mongo:6.0
+    container_name: mongodb-order
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: orderservice_db
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongodb_order_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - order-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/orderservice_db --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_MONGODB_HOST: mongodb-order
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: orderservice_db
+      SPRING_DATA_MONGODB_USERNAME: admin
+      SPRING_DATA_MONGODB_PASSWORD: password123
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+      SERVICES_USER_SERVICE_URL: http://user-service:8082
+      SERVICES_PRODUCT_SERVICE_URL: http://product-service:8081
+    ports:
+      - "8083:8083"
+    depends_on:
+      mongodb-order:
+        condition: service_healthy
+    networks:
+      - order-network
+      - microcommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mongodb_order_data:
+    driver: local
+
+networks:
+  order-network:
+    driver: bridge
+  microcommerce-network:
+    external: true
+    name: microcommerce-network

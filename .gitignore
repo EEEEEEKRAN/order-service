@@ -1,0 +1,41 @@
+# Fichiers de build Maven
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# Logs
+*.log
+logs/
+
+# Fichiers IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Variables d'environnement
+.env
+.env.local
+.env.production
+
+# Spring Boot
+application-*.properties
+application-*.yml
+!application.yml
+!application.properties
+
+# Tests
+*.hprof
