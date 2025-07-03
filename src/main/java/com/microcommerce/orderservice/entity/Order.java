@@ -9,12 +9,12 @@ import java.util.List;
 import java.math.BigDecimal;
 
 /**
- * Entité représentant une commande dans le système
+ * Entité qui représente une commande dans le système
  * 
- * Une commande contient :
+ * Une commande c'est :
  * - Les infos de base (id, userId, statut, dates)
  * - Une liste d'items commandés
- * - Les totaux calculés
+ * - Les totaux calculés automatiquement
  * - Les infos de livraison
  */
 @Document(collection = "orders")
@@ -38,13 +38,13 @@ public class Order {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
-    // Infos de livraison
+    // Infos de livraison (adresse, ville, etc.)
     private String shippingAddress;
     private String shippingCity;
     private String shippingZipCode;
     private String shippingCountry;
     
-    // Notes optionnelles
+    // Notes optionnelles du client
     private String notes;
     
     // Constructeurs
@@ -61,7 +61,7 @@ public class Order {
         calculateTotal();
     }
     
-    // Méthode pour calculer le total automatiquement
+    // Méthode qui calcule le total automatiquement
     public void calculateTotal() {
         if (items != null && !items.isEmpty()) {
             this.totalAmount = items.stream()
@@ -96,7 +96,7 @@ public class Order {
     
     public void setItems(List<OrderItem> items) {
         this.items = items;
-        calculateTotal(); // Recalcule automatiquement le total
+        calculateTotal(); // On recalcule automatiquement le total
     }
     
     public OrderStatus getStatus() {

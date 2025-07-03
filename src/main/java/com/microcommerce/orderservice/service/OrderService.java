@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service principal pour la gestion des commandes
+ * Service principal pour gérer les commandes
  * 
  * Contient toute la logique métier :
  * - Création et validation des commandes
@@ -45,18 +45,18 @@ public class OrderService {
         logger.info("Création d'une nouvelle commande pour l'utilisateur: {}", order.getUserId());
         
         try {
-            // Vérifier que l'utilisateur existe
+            // On vérifie que l'utilisateur existe
             if (!userServiceClient.userExists(order.getUserId())) {
                 throw new RuntimeException("Utilisateur introuvable: " + order.getUserId());
             }
             
-            // Valider et enrichir les items avec les infos produits
+            // On valide et enrichit les items avec les infos produits
             validateAndEnrichOrderItems(order);
             
-            // Calculer le total
+            // On calcule le total
             order.calculateTotal();
             
-            // Sauvegarder
+            // On sauvegarde
             Order savedOrder = orderRepository.save(order);
             logger.info("Commande créée avec succès: {}", savedOrder.getId());
             
@@ -77,7 +77,7 @@ public class OrderService {
     }
     
     /**
-     * Récupère une commande par son ID
+     * Chope une commande par son ID
      */
     public Optional<Order> getOrderById(String id) {
         logger.info("Recherche de la commande: {}", id);
@@ -114,7 +114,7 @@ public class OrderService {
         
         Order order = optionalOrder.get();
         
-        // Vérifier que la transition est autorisée
+        // On vérifie que la transition est autorisée
         if (!order.getStatus().canTransitionTo(newStatus)) {
             throw new RuntimeException(
                 String.format("Transition non autorisée de %s vers %s", 
@@ -130,7 +130,7 @@ public class OrderService {
     }
     
     /**
-     * Annule une commande si possible
+     * Annule une commande si c'est possible
      */
     public Order cancelOrder(String orderId) {
         logger.info("Tentative d'annulation de la commande: {}", orderId);
@@ -170,7 +170,7 @@ public class OrderService {
     }
     
     /**
-     * Recherche les commandes dans une période
+     * Recherche les commandes dans une période donnée
      */
     public List<Order> getOrdersBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
         logger.info("Recherche des commandes entre {} et {}", startDate, endDate);
@@ -178,7 +178,7 @@ public class OrderService {
     }
     
     /**
-     * Récupère les statistiques des commandes
+     * Récupère les stats des commandes
      */
     public OrderStats getOrderStats() {
         logger.info("Calcul des statistiques des commandes");
@@ -196,7 +196,7 @@ public class OrderService {
     }
     
     /**
-     * Trouve les commandes contenant un produit spécifique
+     * Trouve les commandes qui contiennent un produit spécifique
      */
     public List<Order> getOrdersByProductId(String productId) {
         logger.info("Recherche des commandes contenant le produit: {}", productId);
@@ -240,7 +240,7 @@ public class OrderService {
             throw new RuntimeException("Une commande doit contenir au moins un item");
         }
         
-        // Pour chaque item, vérifier que le produit existe et récupérer ses infos
+        // Pour chaque item, on vérifie que le produit existe et on récupère ses infos
         order.getItems().forEach(item -> {
             try {
                 // Appel au Product Service pour vérifier l'existence et récupérer les infos
@@ -250,12 +250,12 @@ public class OrderService {
                     throw new RuntimeException("Produit introuvable: " + item.getProductId());
                 }
                 
-                // Enrichir l'item avec les infos du produit
+                // On enrichit l'item avec les infos du produit
                 item.setProductName(productInfo.getName());
                 // Note: description supprimée du DTO optimisé pour la performance
                 item.setProductCategory(productInfo.getCategory());
                 
-                // Utiliser le prix actuel du produit si pas spécifié
+                // On utilise le prix actuel du produit si pas spécifié
                 if (item.getPrice() == null) {
                     item.setPrice(productInfo.getPrice());
                 }

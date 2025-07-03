@@ -18,9 +18,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Contrôleur REST pour la gestion des commandes
+ * Contrôleur REST pour gérer les commandes
  * 
- * Expose toutes les APIs nécessaires pour :
+ * Expose toutes les APIs qu'il faut pour :
  * - CRUD des commandes
  * - Gestion des statuts
  * - Recherches et filtres
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*") // En prod, spécifier les domaines autorisés
+@CrossOrigin(origins = "*") // En prod, on spécifiera les domaines autorisés
 public class OrderController {
     
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
@@ -74,7 +74,7 @@ public class OrderController {
     }
     
     /**
-     * Récupère une commande par son ID
+     * Chope une commande par son ID
      * GET /api/orders/{id}
      */
     @GetMapping("/{id}")
@@ -218,7 +218,7 @@ public class OrderController {
     }
     
     /**
-     * Recherche les commandes dans une période
+     * Recherche les commandes dans une période donnée
      * GET /api/orders/search/period?start=...&end=...
      */
     @GetMapping("/search/period")
@@ -240,7 +240,7 @@ public class OrderController {
     }
     
     /**
-     * Récupère les statistiques des commandes
+     * Récupère les stats des commandes
      * GET /api/orders/stats
      */
     @GetMapping("/stats")
@@ -259,7 +259,7 @@ public class OrderController {
     }
     
     /**
-     * Trouve les commandes contenant un produit spécifique
+     * Trouve les commandes qui contiennent un produit spécifique
      * GET /api/orders/product/{productId}
      */
     @GetMapping("/product/{productId}")
@@ -277,7 +277,7 @@ public class OrderController {
     }
     
     /**
-     * Endpoint de test pour vérifier que le service fonctionne
+     * Endpoint de test pour vérifier que le service tourne bien
      * GET /api/orders/test
      */
     @GetMapping("/test")
