@@ -1,5 +1,23 @@
-# Utilise l'image officielle OpenJDK 17
-FROM openjdk:17-jdk-slim
+# Utilise une image Maven avec Java 17
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+# Définit le répertoire de travail dans le conteneur
+WORKDIR /app
+
+# Copie le fichier pom.xml
+COPY pom.xml .
+
+# Télécharge les dépendances (optimisation du cache Docker)
+RUN mvn dependency:go-offline -B
+
+# Copie le code source
+COPY src src
+
+# Compile l'application
+RUN mvn clean package -DskipTests
+
+# Étape finale avec une image Java légère
+FROM eclipse-temurin:17-jre-alpine
 
 # Métadonnées de l'image
 LABEL maintainer="Micro Commerce Team"
@@ -15,27 +33,13 @@ ENV MONGODB_DATABASE=orderservice_db
 ENV USER_SERVICE_URL=http://user-service:8082
 ENV PRODUCT_SERVICE_URL=http://product-service:8081
 
-# Crée un utilisateur non-root pour la sécurité
-RUN groupadd -r orderservice && useradd -r -g orderservice orderservice
-
-# Répertoire de travail
 WORKDIR /app
 
-# Copie le fichier JAR de l'application
-COPY target/order-service-1.0.0.jar app.jar
+# Copie le JAR compilé depuis l'étape de build
+COPY --from=build /app/target/order-service-1.0.0.jar app.jar
 
-# Change le propriétaire des fichiers
-RUN chown -R orderservice:orderservice /app
-
-# Utilise l'utilisateur non-root
-USER orderservice
-
-# Expose le port de l'application
+# Expose le port 8083 (port du service commande)
 EXPOSE 8083
 
-# Point de santé pour Docker
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8083/actuator/health || exit 1
-
-# Commande pour démarrer l'application
-ENTRYPOINT ["java", "-jar", "-Djava.security.egd=file:/dev/./urandom", "app.jar"]
+# Commande pour lancer l'application
+CMD ["java", "-jar", "app.jar"]
